@@ -1,6 +1,8 @@
 const express = require("express");
 const cryptojs = require("crypto-js");
 const db = require("../db");
+const jwt = require('jsonwebtoken');
+const config = require('../config')
 
 const router = express.Router();
 
@@ -10,25 +12,23 @@ router.post("/register", (req, res) => {
 
   const data = {
     status: "new user created",
-    id,
     full_name,
     email,
     password,
     encryptedPassword,
-    phone_no,
-    created_time
+    phone_no
   };
 
-  const query = "insert into user (full_name , email, password, phone_no ) VALUES (?, ?, ?,?)";
+  const query = "insert into user (full_name, email, password, phone_no) values (?, ?, ?,?)";
 
   db.pool.execute(
     query,
     [full_name, email, encryptedPassword, phone_no],
-    (error, dbResults) => {
+    (error) => {
       if (error) {
-        res.send("Internal Error");
+        res.send("Internal error");
       } else {
-        res.send({ data, dbResults });
+        res.send(data);
       }
     }
   );
@@ -50,7 +50,9 @@ router.post("/login", (req, res) => {
       return;
     }
     if (dbResults[0].password === encryptedPassword) {
-      res.send({status : "logged in successfully", dbResults});
+      const payload = { id: dbResults[0].user_id }
+      const token = jwt.sign(payload, config.secret)
+      res.send({status: "Logged in successfully", token});
       return;
     }
     res.send("Entered wrong credentials");
