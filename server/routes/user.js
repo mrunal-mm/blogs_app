@@ -41,6 +41,19 @@ router.put("/edit-blog", (req, res) => {
   );
 });
 
+router.get("/delete-blog", (req, res) => {
+  const { blog_id } = req.body;
+  const query = "delete from blogs where blog_id = ?";
+
+  db.pool.execute(query, [blog_id], (error, dbResults) => {
+    if (error) {
+      res.send("Internal error.");
+      return;
+    }
+    res.send({ status: "blog deleted", dbResults });
+  });
+});
+
 router.get("/view-my-blogs", (req, res) => {
   const user_id = global.user_id;
   const query = "select * from blogs where user_id = ?";
