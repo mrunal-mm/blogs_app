@@ -1,8 +1,7 @@
 const express = require("express");
 const cryptojs = require("crypto-js");
 const db = require("../db");
-const jwt = require('jsonwebtoken');
-const config = require('../config')
+const global = require("../global");
 
 const router = express.Router();
 
@@ -50,9 +49,10 @@ router.post("/login", (req, res) => {
       return;
     }
     if (dbResults[0].password === encryptedPassword) {
-      const payload = { id: dbResults[0].user_id }
-      const token = jwt.sign(payload, config.secret)
-      res.send({status: "Logged in successfully", token});
+      
+      global.user_id = dbResults[0]["user_id"];
+      res.send({status: "logged in", dbResults, user_id : global.user_id});
+
       return;
     }
     res.send("Entered wrong credentials");
