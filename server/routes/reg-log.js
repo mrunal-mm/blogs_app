@@ -1,47 +1,60 @@
-const express = require('express');
-const cryptojs = require('crypto-js');
-const db = require('../db');
+const express = require("express");
+const cryptojs = require("crypto-js");
+const db = require("../db");
 
 const router = express.Router();
 
-router.post('/register', (req, res) => {
-  const { email, password, role } = req.body;
+router.post("/register", (req, res) => {
+  const { full_name, email, password, phone_no} = req.body;
   const encryptedPassword = String(cryptojs.SHA256(password));
-  var data = { status: 'new user created', email, encryptedPassword, role };
 
-  const query = 'INSERT INTO usertb (email, password, role) VALUES (?, ?, ?)';
-  db.pool.execute(query, [email, encryptedPassword, role], (error, dbResults) => {
-    if (error) {
-      res.send('Internal Error');
-    } else {
-      res.send({ data, dbResults });
+  const data = {
+    status: "new user created",
+    id,
+    full_name,
+    email,
+    password,
+    encryptedPassword,
+    phone_no,
+    created_time
+  };
+
+  const query = "insert into user (full_name , email, password, phone_no ) VALUES (?, ?, ?,?)";
+
+  db.pool.execute(
+    query,
+    [full_name, email, encryptedPassword, phone_no],
+    (error, dbResults) => {
+      if (error) {
+        res.send("Internal Error");
+      } else {
+        res.send({ data, dbResults });
+      }
     }
-  });
+  );
 });
 
-router.post('/login', (req, res) => {
+router.post("/login", (req, res) => {
   const { email, password } = req.body;
   const encryptedPassword = String(cryptojs.SHA256(password));
 
-  const query = 'SELECT personid, email, password FROM usertb WHERE email = ?';
+  const query = "select * from user where email = ?";
+
   db.pool.execute(query, [email], (error, dbResults) => {
     if (error) {
-      res.send('error');
+      res.send("error");
       return;
     }
     if (dbResults.length === 0) {
-      res.send('nouser');
+      res.send("no user found");
       return;
     }
     if (dbResults[0].password === encryptedPassword) {
-      currentCustomerId = dbResults[0].personid;
-      res.send('success');
+      res.send({status : "logged in successfully", dbResults});
       return;
     }
-    res.send('wrong');
+    res.send("Entered wrong credentials");
   });
 });
-
-
 
 module.exports = router;
