@@ -18,4 +18,17 @@ router.post("/add-blog", (req, res)=>{
     })
 })
 
+router.put("/edit-blog", (req, res)=>{
+    const {title, contents, category_id, blog_id} = req.body;
+    const query = "update blogs set title = ?, contents = ?, category_id = ? where blog_id = ?";
+
+    db.pool.execute(query, [title, contents, category_id, blog_id], (error, dbResults)=>{
+        if (error){
+            res.send("Internal error.");
+        return;
+        }
+        res.send({status: "blog edited", dbResults});
+    })
+})
+
 module.exports = router;
